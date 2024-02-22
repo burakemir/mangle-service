@@ -1,5 +1,8 @@
 Demo grpc service for trying out Mangle deductive database.
 
+Mangle is an extension of Datalog.
+The repo is here: https://github.com/google/mangle
+
 ## Building
 
 ```go
