@@ -1,8 +1,10 @@
 package service
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -23,6 +25,10 @@ type MangleService struct {
 }
 
 func New() (*MangleService, error) {
+	if *source == "" {
+		return nil, errors.New("no --source given")
+	}
+	log.Printf("read source from %q", *source)
 	sourceBytes, err := os.ReadFile(*source)
 	if err != nil {
 		return nil, err
@@ -48,7 +54,7 @@ func New() (*MangleService, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("stats: %v\n", stats)
+	log.Printf("evaluation finished. stats: %v\n", stats)
 	return &MangleService{store: store}, nil
 }
 
@@ -71,10 +77,6 @@ func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer
 	}
 
 	fmt.Println("querying store with query %v", u)
-	m.store.GetFacts(u, func(a ast.Atom) error {
-		fmt.Println("should return : %v", a)
-		return nil
-	})
 	err = m.store.GetFacts(u, func(a ast.Atom) error {
 		answer := &pb.QueryAnswer{
 			Answer: a.String(),

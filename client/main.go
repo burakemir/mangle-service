@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	pb "github.com/burakemir/mangle-service/proto"
@@ -27,16 +28,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("looking for answers!")
+	log.Printf("[query %q]", query)
 	var answer *pb.QueryAnswer
+	n := 0
 	for {
 		answer, err = stream.Recv()
 		if err != nil {
 			break
 		}
+		n++
 		fmt.Println(answer.GetAnswer())
 	}
 	if err != io.EOF {
-		fmt.Println("got err %v", err)
+		log.Printf("got err %v", err)
 	}
+	log.Printf("[got %d answers]", n)
 }
