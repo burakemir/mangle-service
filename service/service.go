@@ -48,7 +48,7 @@ func New() (*MangleService, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("stats: %v", stats)
+	fmt.Printf("stats: %v\n", stats)
 	return &MangleService{store: store}, nil
 }
 
