@@ -86,7 +86,7 @@ func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer
 			return err
 		}
 		log.Printf("evaluation of request program finished. stats: %v\n", stats)
-		log.Printf("store : %v\n", store)
+		log.Printf("store predicates: %s\n", store.ListPredicates())
 	}
 
 	query := req.GetQuery()
