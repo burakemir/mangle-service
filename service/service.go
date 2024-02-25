@@ -1,3 +1,4 @@
+// Package services contains an implementation of the grpc MangleServer interface.
 package service
 
 import (
@@ -18,9 +19,18 @@ import (
 )
 
 var source = flag.String("source", "", "path to source to evaluate")
+var programInfo *analysis.ProgramInfo
+
+func copyDecl(decls map[ast.PredicateSym]*ast.Decl) map[ast.PredicateSym]ast.Decl {
+	m := make(map[ast.PredicateSym]ast.Decl, len(decls))
+	for k, v := range decls {
+		m[k] = *v
+	}
+	return m
+}
 
 type MangleService struct {
-	store factstore.ReadOnlyFactStore
+	store factstore.FactStore
 	pb.UnimplementedMangleServer
 }
 
@@ -37,10 +47,11 @@ func New() (*MangleService, error) {
 	if err != nil {
 		return nil, err
 	}
-	programInfo, err := analysis.Analyze([]parse.SourceUnit{u}, nil)
+	info, err := analysis.Analyze([]parse.SourceUnit{u}, nil)
 	if err != nil {
 		return nil, err
 	}
+	programInfo = info
 	strata, predToStratum, err := analysis.Stratify(analysis.Program{
 		EdbPredicates: programInfo.EdbPredicates,
 		IdbPredicates: programInfo.IdbPredicates,
@@ -59,16 +70,24 @@ func New() (*MangleService, error) {
 }
 
 func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer) error {
-	program := req.GetProgram()
-	var p *parse.SourceUnit
-	if program != "" {
+	var store = m.store
+	if program := req.GetProgram(); program != "" {
 		u, err := parse.Unit(strings.NewReader(program))
 		if err != nil {
 			return err
 		}
-		p = &u
+		programInfo, err := analysis.Analyze([]parse.SourceUnit{u}, copyDecl(programInfo.Decls))
+		if err != nil {
+			return err
+		}
+		store = factstore.NewTeeingStore(store)
+		stats, err := engine.EvalProgramWithStats(programInfo, store)
+		if err != nil {
+			return err
+		}
+		log.Printf("evaluation of request program finished. stats: %v\n", stats)
+		log.Printf("store : %v\n", store)
 	}
-	fmt.Println("program: %v", p)
 
 	query := req.GetQuery()
 	u, err := parse.Atom(query)
@@ -76,8 +95,8 @@ func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer
 		return err
 	}
 
-	fmt.Println("querying store with query %v", u)
-	err = m.store.GetFacts(u, func(a ast.Atom) error {
+	log.Printf("querying store with query %v", u)
+	err = store.GetFacts(u, func(a ast.Atom) error {
 		answer := &pb.QueryAnswer{
 			Answer: a.String(),
 		}

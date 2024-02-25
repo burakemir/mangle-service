@@ -12,11 +12,15 @@ go build ./...
 
 ## Run the Server
 
+This starts the gprc server, with a tiny database.
+
 ```
 go run ./server --source=example/demo.mg
 ```
 
 ## Run the Client
+
+This queries the gprc server, with a recursive query.
 
 ```go
 go run ./client

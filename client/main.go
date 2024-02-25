@@ -12,6 +12,12 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// Sample recursive query.
+var program = `
+reachable(X, Y) :- edge(X, Y).
+reachable(X, Z) :- edge(X, Y), reachable(Y, Z).
+`
+
 func main() {
 	conn, err := grpc.Dial("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -24,7 +30,7 @@ func main() {
 	if len(os.Args) > 1 {
 		query = os.Args[1]
 	}
-	stream, err := client.Query(context.Background(), &pb.QueryRequest{Query: query})
+	stream, err := client.Query(context.Background(), &pb.QueryRequest{Query: query, Program: program})
 	if err != nil {
 		panic(err)
 	}
