@@ -27,6 +27,21 @@ go run ./client
 go run ./client --query="reachable(X, /d)"
 ```
 
+### Alternatively: use grpcurl
+
+```
+grpcurl -plaintext -use-reflection=false -proto proto/mangle.proto \
+  -d '{"query": "edge(/a, X)" }' localhost:8080 mangle.Mangle.Query
+
+```
+
+`grpcurl` can be obtained like so:
+
+```
+go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+```
+
+
 ## Regenerate the proto files
 
 ```shell
