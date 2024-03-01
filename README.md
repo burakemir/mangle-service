@@ -24,7 +24,7 @@ This queries the gprc server, with a recursive query.
 
 ```go
 go run ./client
-go run ./client "reachable(X, /d)"
+go run ./client --query="reachable(X, /d)"
 ```
 
 ## Regenerate the proto files
