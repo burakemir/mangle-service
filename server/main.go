@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"flag"
+	"io"
 	"log"
 	"net"
+	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	pb "github.com/burakemir/mangle-service/proto"
@@ -13,14 +16,31 @@ import (
 	"google.golang.org/grpc"
 )
 
+var source = flag.String("source", "", "path to source to evaluate")
+
+func readSource() io.Reader {
+	sourceBytes, err := os.ReadFile(*source)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("read source from %q", *source)
+	return strings.NewReader(string(sourceBytes))
+}
+
 func main() {
 	flag.Parse()
-	server := grpc.NewServer()
-	mangleServer, err := service.New()
-	if err != nil {
-		panic(err)
+
+	mangleService := service.New()
+	if *source != "" {
+		if err := mangleService.UpdateFromSource(readSource()); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("updated db.")
+	} else {
+		log.Println("no --source given.")
 	}
-	pb.RegisterMangleServer(server, mangleServer)
+	server := grpc.NewServer()
+	pb.RegisterMangleServer(server, mangleService)
 
 	basectx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()

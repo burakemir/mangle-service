@@ -7,9 +7,10 @@ import (
 	"log"
 	"os"
 
-	pb "github.com/burakemir/mangle-service/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	pb "github.com/burakemir/mangle-service/proto"
 )
 
 // Sample recursive query.

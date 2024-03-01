@@ -2,11 +2,8 @@
 package service
 
 import (
-	"errors"
-	"flag"
-	"fmt"
+	"io"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/google/mangle/analysis"
@@ -18,7 +15,6 @@ import (
 	pb "github.com/burakemir/mangle-service/proto"
 )
 
-var source = flag.String("source", "", "path to source to evaluate")
 var programInfo *analysis.ProgramInfo
 
 func copyDecl(decls map[ast.PredicateSym]*ast.Decl) map[ast.PredicateSym]ast.Decl {
@@ -34,22 +30,19 @@ type MangleService struct {
 	pb.UnimplementedMangleServer
 }
 
-func New() (*MangleService, error) {
-	if *source == "" {
-		return nil, errors.New("no --source given")
-	}
-	log.Printf("read source from %q", *source)
-	sourceBytes, err := os.ReadFile(*source)
+func New() *MangleService {
+	return &MangleService{store: factstore.NewSimpleInMemoryStore()}
+}
+
+// Parses, analyzes and evaluates source, using current store.
+func (m *MangleService) UpdateFromSource(reader io.Reader) error {
+	u, err := parse.Unit(reader)
 	if err != nil {
-		return nil, err
-	}
-	u, err := parse.Unit(strings.NewReader(string(sourceBytes)))
-	if err != nil {
-		return nil, err
+		return err
 	}
 	info, err := analysis.Analyze([]parse.SourceUnit{u}, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	programInfo = info
 	strata, predToStratum, err := analysis.Stratify(analysis.Program{
@@ -58,15 +51,14 @@ func New() (*MangleService, error) {
 		Rules:         programInfo.Rules,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	store := factstore.NewSimpleInMemoryStore()
-	stats, err := engine.EvalStratifiedProgramWithStats(programInfo, strata, predToStratum, store)
+	stats, err := engine.EvalStratifiedProgramWithStats(programInfo, strata, predToStratum, m.store)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	log.Printf("evaluation finished. stats: %v\n", stats)
-	return &MangleService{store: store}, nil
+	log.Printf("service.go:UpdateFromSource: evaluation finished. stats: %v\n", stats)
+	return nil
 }
 
 func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer) error {
@@ -85,13 +77,14 @@ func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer
 		if err != nil {
 			return err
 		}
-		log.Printf("evaluation of request program finished. stats: %v\n", stats)
-		log.Printf("store predicates: %s\n", store.ListPredicates())
+		log.Printf("service.go:Query evaluation of request program finished. stats: %v\n", stats)
+		log.Printf("service.go:Query store predicates: %s\n", store.ListPredicates())
 	}
 
 	query := req.GetQuery()
 	u, err := parse.Atom(query)
 	if err != nil {
+		log.Printf("service.go:Query parse %q (query) failed: %v\n", query, err)
 		return err
 	}
 
@@ -101,7 +94,7 @@ func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer
 			Answer: a.String(),
 		}
 		if err := stream.Send(answer); err != nil {
-			fmt.Println("got send err: %v", err)
+			log.Printf("service.go: got send err: %v", err)
 			return err
 		}
 		return nil
