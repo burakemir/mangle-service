@@ -90,6 +90,57 @@ func (x *QueryRequest) GetProgram() string {
 	return ""
 }
 
+// An update request consists of fact and rule definitions
+// (a "program"). The program will be evaluated on top of
+// the current state.
+type UpdateRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// See QueryRequest for what a program is.
+	Program string `protobuf:"bytes,2,opt,name=program,proto3" json:"program,omitempty"`
+}
+
+func (x *UpdateRequest) Reset() {
+	*x = UpdateRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mangle_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRequest) ProtoMessage() {}
+
+func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mangle_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRequest) Descriptor() ([]byte, []int) {
+	return file_mangle_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *UpdateRequest) GetProgram() string {
+	if x != nil {
+		return x.Program
+	}
+	return ""
+}
+
 // List of errors encountered during query and program processing.
 // If errors is non-empty, then the answers should not be
 // considered complete.
@@ -105,7 +156,7 @@ type QueryError struct {
 func (x *QueryError) Reset() {
 	*x = QueryError{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mangle_proto_msgTypes[1]
+		mi := &file_mangle_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -118,7 +169,7 @@ func (x *QueryError) String() string {
 func (*QueryError) ProtoMessage() {}
 
 func (x *QueryError) ProtoReflect() protoreflect.Message {
-	mi := &file_mangle_proto_msgTypes[1]
+	mi := &file_mangle_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -131,10 +182,59 @@ func (x *QueryError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryError.ProtoReflect.Descriptor instead.
 func (*QueryError) Descriptor() ([]byte, []int) {
-	return file_mangle_proto_rawDescGZIP(), []int{1}
+	return file_mangle_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *QueryError) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+// List of errors encountered during update program processing.
+type UpdateError struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// A human-readable error message.
+	Msg string `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+}
+
+func (x *UpdateError) Reset() {
+	*x = UpdateError{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mangle_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateError) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateError) ProtoMessage() {}
+
+func (x *UpdateError) ProtoReflect() protoreflect.Message {
+	mi := &file_mangle_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateError.ProtoReflect.Descriptor instead.
+func (*UpdateError) Descriptor() ([]byte, []int) {
+	return file_mangle_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UpdateError) GetMsg() string {
 	if x != nil {
 		return x.Msg
 	}
@@ -154,7 +254,7 @@ type QueryAnswer struct {
 func (x *QueryAnswer) Reset() {
 	*x = QueryAnswer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mangle_proto_msgTypes[2]
+		mi := &file_mangle_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -167,7 +267,7 @@ func (x *QueryAnswer) String() string {
 func (*QueryAnswer) ProtoMessage() {}
 
 func (x *QueryAnswer) ProtoReflect() protoreflect.Message {
-	mi := &file_mangle_proto_msgTypes[2]
+	mi := &file_mangle_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -180,7 +280,7 @@ func (x *QueryAnswer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryAnswer.ProtoReflect.Descriptor instead.
 func (*QueryAnswer) Descriptor() ([]byte, []int) {
-	return file_mangle_proto_rawDescGZIP(), []int{2}
+	return file_mangle_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *QueryAnswer) GetAnswer() string {
@@ -188,6 +288,55 @@ func (x *QueryAnswer) GetAnswer() string {
 		return x.Answer
 	}
 	return ""
+}
+
+// For a successful update, info about updated predicates.
+type UpdateAnswer struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// For a correct update program, lists updated predicates.
+	UpdatedPredicates []string `protobuf:"bytes,2,rep,name=updated_predicates,json=updatedPredicates,proto3" json:"updated_predicates,omitempty"`
+}
+
+func (x *UpdateAnswer) Reset() {
+	*x = UpdateAnswer{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mangle_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateAnswer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAnswer) ProtoMessage() {}
+
+func (x *UpdateAnswer) ProtoReflect() protoreflect.Message {
+	mi := &file_mangle_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAnswer.ProtoReflect.Descriptor instead.
+func (*UpdateAnswer) Descriptor() ([]byte, []int) {
+	return file_mangle_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *UpdateAnswer) GetUpdatedPredicates() []string {
+	if x != nil {
+		return x.UpdatedPredicates
+	}
+	return nil
 }
 
 var File_mangle_proto protoreflect.FileDescriptor
@@ -198,19 +347,31 @@ var file_mangle_proto_rawDesc = []byte{
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x71, 0x75, 0x65, 0x72, 0x79, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x71, 0x75, 0x65, 0x72, 0x79, 0x12, 0x18, 0x0a, 0x07,
 	0x70, 0x72, 0x6f, 0x67, 0x72, 0x61, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x70,
-	0x72, 0x6f, 0x67, 0x72, 0x61, 0x6d, 0x22, 0x1e, 0x0a, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x45,
-	0x72, 0x72, 0x6f, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x03, 0x6d, 0x73, 0x67, 0x22, 0x25, 0x0a, 0x0b, 0x51, 0x75, 0x65, 0x72, 0x79, 0x41,
-	0x6e, 0x73, 0x77, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x32, 0x3e, 0x0a,
-	0x06, 0x4d, 0x61, 0x6e, 0x67, 0x6c, 0x65, 0x12, 0x34, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79,
-	0x12, 0x14, 0x2e, 0x6d, 0x61, 0x6e, 0x67, 0x6c, 0x65, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x6d, 0x61, 0x6e, 0x67, 0x6c, 0x65, 0x2e,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x41, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x30, 0x01, 0x42, 0x2b, 0x5a,
-	0x29, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x62, 0x75, 0x72, 0x61,
-	0x6b, 0x65, 0x6d, 0x69, 0x72, 0x2f, 0x6d, 0x61, 0x6e, 0x67, 0x6c, 0x65, 0x2d, 0x73, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x72, 0x6f, 0x67, 0x72, 0x61, 0x6d, 0x22, 0x29, 0x0a, 0x0d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x70, 0x72, 0x6f, 0x67, 0x72,
+	0x61, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x70, 0x72, 0x6f, 0x67, 0x72, 0x61,
+	0x6d, 0x22, 0x1e, 0x0a, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x12,
+	0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d, 0x73,
+	0x67, 0x22, 0x1f, 0x0a, 0x0b, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x45, 0x72, 0x72, 0x6f, 0x72,
+	0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d,
+	0x73, 0x67, 0x22, 0x25, 0x0a, 0x0b, 0x51, 0x75, 0x65, 0x72, 0x79, 0x41, 0x6e, 0x73, 0x77, 0x65,
+	0x72, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x61, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x22, 0x3d, 0x0a, 0x0c, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x41, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x12, 0x2d, 0x0a, 0x12, 0x75, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x64, 0x5f, 0x70, 0x72, 0x65, 0x64, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x18,
+	0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x11, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x50, 0x72,
+	0x65, 0x64, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x32, 0x75, 0x0a, 0x06, 0x4d, 0x61, 0x6e, 0x67,
+	0x6c, 0x65, 0x12, 0x34, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x14, 0x2e, 0x6d, 0x61,
+	0x6e, 0x67, 0x6c, 0x65, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x13, 0x2e, 0x6d, 0x61, 0x6e, 0x67, 0x6c, 0x65, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
+	0x41, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x30, 0x01, 0x12, 0x35, 0x0a, 0x06, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x12, 0x15, 0x2e, 0x6d, 0x61, 0x6e, 0x67, 0x6c, 0x65, 0x2e, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x6d, 0x61, 0x6e, 0x67,
+	0x6c, 0x65, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x41, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x42,
+	0x2b, 0x5a, 0x29, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x62, 0x75,
+	0x72, 0x61, 0x6b, 0x65, 0x6d, 0x69, 0x72, 0x2f, 0x6d, 0x61, 0x6e, 0x67, 0x6c, 0x65, 0x2d, 0x73,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -225,17 +386,22 @@ func file_mangle_proto_rawDescGZIP() []byte {
 	return file_mangle_proto_rawDescData
 }
 
-var file_mangle_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_mangle_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_mangle_proto_goTypes = []interface{}{
-	(*QueryRequest)(nil), // 0: mangle.QueryRequest
-	(*QueryError)(nil),   // 1: mangle.QueryError
-	(*QueryAnswer)(nil),  // 2: mangle.QueryAnswer
+	(*QueryRequest)(nil),  // 0: mangle.QueryRequest
+	(*UpdateRequest)(nil), // 1: mangle.UpdateRequest
+	(*QueryError)(nil),    // 2: mangle.QueryError
+	(*UpdateError)(nil),   // 3: mangle.UpdateError
+	(*QueryAnswer)(nil),   // 4: mangle.QueryAnswer
+	(*UpdateAnswer)(nil),  // 5: mangle.UpdateAnswer
 }
 var file_mangle_proto_depIdxs = []int32{
 	0, // 0: mangle.Mangle.Query:input_type -> mangle.QueryRequest
-	2, // 1: mangle.Mangle.Query:output_type -> mangle.QueryAnswer
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 1: mangle.Mangle.Update:input_type -> mangle.UpdateRequest
+	4, // 2: mangle.Mangle.Query:output_type -> mangle.QueryAnswer
+	5, // 3: mangle.Mangle.Update:output_type -> mangle.UpdateAnswer
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -260,7 +426,7 @@ func file_mangle_proto_init() {
 			}
 		}
 		file_mangle_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*QueryError); i {
+			switch v := v.(*UpdateRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -272,7 +438,43 @@ func file_mangle_proto_init() {
 			}
 		}
 		file_mangle_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryError); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mangle_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateError); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mangle_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryAnswer); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mangle_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateAnswer); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -290,7 +492,7 @@ func file_mangle_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_mangle_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -2,9 +2,15 @@
 package service
 
 import (
+	"bytes"
+	"compress/gzip"
+	"context"
 	"io"
 	"log"
+	"os"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/google/mangle/analysis"
 	"github.com/google/mangle/ast"
@@ -26,12 +32,56 @@ func copyDecl(decls map[ast.PredicateSym]*ast.Decl) map[ast.PredicateSym]ast.Dec
 }
 
 type MangleService struct {
-	store factstore.FactStore
 	pb.UnimplementedMangleServer
+	store       factstore.FactStore
+	programInfo *analysis.ProgramInfo
+	lock        sync.Mutex
+	evalFn      func(store factstore.FactStore) (engine.Stats, error)
 }
 
-func New() *MangleService {
-	return &MangleService{store: factstore.NewSimpleInMemoryStore()}
+func New(dbPath string) (*MangleService, error) {
+	var store factstore.FactStore
+
+	if dbPath == "" {
+		store = factstore.NewSimpleInMemoryStore()
+	} else {
+		// This reads the entire contents into memory.
+		// The fact that it is gzipped may make this more
+		// bearable, but if you have a large DB or small memory
+		// then you may want to do things differently.
+		dbBytes, err := os.ReadFile(dbPath)
+		if err != nil {
+			return nil, err
+		}
+		s, err := factstore.NewSimpleColumnStoreFromGzipBytes(dbBytes)
+		if err != nil {
+			return nil, err
+		}
+		store = factstore.NewMergedStore([]factstore.ReadOnlyFactStore{s}, factstore.NewIndexedInMemoryStore())
+	}
+	return &MangleService{store: store, lock: sync.Mutex{}, programInfo: programInfo}, nil
+}
+
+// This should only be called once.
+func (m *MangleService) PersistCallback(dbPath string) func() {
+	return func() {
+		m.lock.Lock()
+		defer m.lock.Unlock()
+		var start = time.Now()
+		var b bytes.Buffer
+		w := gzip.NewWriter(&b)
+		sc := factstore.SimpleColumn{} // non-deterministic
+		if err := sc.WriteTo(m.store, w); err != nil {
+			log.Fatal(err)
+		}
+		if err := w.Close(); err != nil {
+			log.Fatal(err)
+		}
+		if err := os.WriteFile(dbPath, b.Bytes(), 0644); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("wrote db at %s (%s)", dbPath, time.Now().Sub(start))
+	}
 }
 
 // Parses, analyzes and evaluates source, using current store.
@@ -53,11 +103,15 @@ func (m *MangleService) UpdateFromSource(reader io.Reader) error {
 	if err != nil {
 		return err
 	}
-	stats, err := engine.EvalStratifiedProgramWithStats(programInfo, strata, predToStratum, m.store)
+	m.evalFn = func(store factstore.FactStore) (engine.Stats, error) {
+		return engine.EvalStratifiedProgramWithStats(programInfo, strata, predToStratum, store)
+	}
+	stats, err := m.evalFn(m.store)
 	if err != nil {
 		return err
 	}
-	log.Printf("service.go:UpdateFromSource: evaluation finished. stats: %v\n", stats)
+	log.Printf("service.go:UpdateFromSource: initial eval finished. \nstats: %v\nnum facts:%d",
+		stats, m.store.EstimateFactCount())
 	return nil
 }
 
@@ -103,4 +157,47 @@ func (m *MangleService) Query(req *pb.QueryRequest, stream pb.Mangle_QueryServer
 		return err
 	}
 	return nil
+}
+
+func (m *MangleService) Update(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateAnswer, error) {
+	u, err := parse.Unit(strings.NewReader(req.GetProgram()))
+	if err != nil {
+		return nil, err
+	}
+	//programInfo, err := analysis.Analyze([]parse.SourceUnit{u}, copyDecl(programInfo.Decls))
+	if err != nil {
+		return nil, err
+	}
+	info, err := analysis.Analyze([]parse.SourceUnit{u}, nil)
+	if err != nil {
+		return nil, err
+	}
+	programInfo = info
+	strata, predToStratum, err := analysis.Stratify(analysis.Program{
+		EdbPredicates: programInfo.EdbPredicates,
+		IdbPredicates: programInfo.IdbPredicates,
+		Rules:         programInfo.Rules,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	updates := factstore.NewSimpleInMemoryStore()
+	merging := factstore.NewMergedStore([]factstore.FactStore{m.store}, updates)
+	stats, err := engine.EvalStratifiedProgramWithStats(programInfo, strata, predToStratum, merging)
+	if err != nil {
+		return nil, err
+	}
+
+	var updatedPreds []string
+	for _, sym := range updates.ListPredicates() {
+		updatedPreds = append(updatedPreds, sym.Symbol)
+	}
+
+	answer := &pb.UpdateAnswer{UpdatedPredicates: updatedPreds}
+	log.Printf("Updated, stats: %v\n updated preds: %v", stats, answer)
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	m.store.Merge(updates)
+	return answer, nil
 }

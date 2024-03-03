@@ -21,7 +21,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Mangle_Query_FullMethodName = "/mangle.Mangle/Query"
+	Mangle_Query_FullMethodName  = "/mangle.Mangle/Query"
+	Mangle_Update_FullMethodName = "/mangle.Mangle/Update"
 )
 
 // MangleClient is the client API for Mangle service.
@@ -33,6 +34,10 @@ type MangleClient interface {
 	// In case of errors, no answers are sent and a QueryError
 	// message is included in status response metadata.
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (Mangle_QueryClient, error)
+	// The server updates its state with result of program.
+	// In case of errors, no update happens and an UpdateError
+	// message is included in status response metadata.
+	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateAnswer, error)
 }
 
 type mangleClient struct {
@@ -75,6 +80,15 @@ func (x *mangleQueryClient) Recv() (*QueryAnswer, error) {
 	return m, nil
 }
 
+func (c *mangleClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateAnswer, error) {
+	out := new(UpdateAnswer)
+	err := c.cc.Invoke(ctx, Mangle_Update_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MangleServer is the server API for Mangle service.
 // All implementations must embed UnimplementedMangleServer
 // for forward compatibility
@@ -84,6 +98,10 @@ type MangleServer interface {
 	// In case of errors, no answers are sent and a QueryError
 	// message is included in status response metadata.
 	Query(*QueryRequest, Mangle_QueryServer) error
+	// The server updates its state with result of program.
+	// In case of errors, no update happens and an UpdateError
+	// message is included in status response metadata.
+	Update(context.Context, *UpdateRequest) (*UpdateAnswer, error)
 	mustEmbedUnimplementedMangleServer()
 }
 
@@ -93,6 +111,9 @@ type UnimplementedMangleServer struct {
 
 func (UnimplementedMangleServer) Query(*QueryRequest, Mangle_QueryServer) error {
 	return status.Errorf(codes.Unimplemented, "method Query not implemented")
+}
+func (UnimplementedMangleServer) Update(context.Context, *UpdateRequest) (*UpdateAnswer, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 func (UnimplementedMangleServer) mustEmbedUnimplementedMangleServer() {}
 
@@ -128,13 +149,36 @@ func (x *mangleQueryServer) Send(m *QueryAnswer) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Mangle_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MangleServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Mangle_Update_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MangleServer).Update(ctx, req.(*UpdateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Mangle_ServiceDesc is the grpc.ServiceDesc for Mangle service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Mangle_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "mangle.Mangle",
 	HandlerType: (*MangleServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Update",
+			Handler:    _Mangle_Update_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Query",
