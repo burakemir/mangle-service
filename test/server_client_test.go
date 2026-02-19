@@ -37,7 +37,10 @@ func atom(s string) ast.Atom {
 
 // TestServerClient tests whether request with a program works.
 func TestServerClient(t *testing.T) {
-	mangleService := service.New()
+	mangleService, err := service.New("")
+	if err != nil {
+		t.Fatal(err)
+	}
 	reader := strings.NewReader(testSource)
 	if err := mangleService.UpdateFromSource(reader); err != nil {
 		t.Fatal(err)
