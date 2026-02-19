@@ -4,7 +4,7 @@ syntax = "proto3";
 
 package mangle;
 
-option go_package = "github.com/burakemir/mangle-service/proto";
+option go_package = "codeberg.org/TauCeti/mangle-service/proto";
 
 // A query request consists of a query and an optional set of
 // declarations and rule definitions ("program").

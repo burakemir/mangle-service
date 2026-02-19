@@ -1,7 +1,8 @@
-Demo grpc service for trying out Mangle deductive database.
+gRPC service for the Mangle deductive database.
 
 Mangle is an extension of Datalog.
-The repo is here: https://github.com/google/mangle
+The Go reference implementation is at: https://codeberg.org/TauCeti/mangle-go
+The Rust implementation (with HTTP server) is at: https://codeberg.org/TauCeti/mangle-rs
 
 ## Building
 

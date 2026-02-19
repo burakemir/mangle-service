@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/burakemir/mangle-service/proto"
+	pb "codeberg.org/TauCeti/mangle-service/proto"
 )
 
 var (

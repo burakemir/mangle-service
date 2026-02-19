@@ -9,13 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/burakemir/mangle-service/service"
+	"codeberg.org/TauCeti/mangle-service/service"
 	"github.com/google/mangle/ast"
 	"github.com/google/mangle/parse"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/burakemir/mangle-service/proto"
+	pb "codeberg.org/TauCeti/mangle-service/proto"
 )
 
 const testSource = `

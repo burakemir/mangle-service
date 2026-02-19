@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	pb "github.com/burakemir/mangle-service/proto"
-	"github.com/burakemir/mangle-service/service"
+	pb "codeberg.org/TauCeti/mangle-service/proto"
+	"codeberg.org/TauCeti/mangle-service/service"
 	"google.golang.org/grpc"
 )
 

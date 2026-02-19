@@ -1,4 +1,4 @@
-module github.com/burakemir/mangle-service
+module codeberg.org/TauCeti/mangle-service
 
 go 1.22
 

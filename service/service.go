@@ -18,7 +18,7 @@ import (
 	"github.com/google/mangle/factstore"
 	"github.com/google/mangle/parse"
 
-	pb "github.com/burakemir/mangle-service/proto"
+	pb "codeberg.org/TauCeti/mangle-service/proto"
 )
 
 var programInfo *analysis.ProgramInfo
