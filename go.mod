@@ -3,7 +3,7 @@ module codeberg.org/TauCeti/mangle-service
 go 1.23
 
 require (
-	github.com/google/mangle v0.4.0
+	codeberg.org/TauCeti/mangle-go v0.5.0
 	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.34.0
 )

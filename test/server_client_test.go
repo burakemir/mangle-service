@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"codeberg.org/TauCeti/mangle-service/service"
-	"github.com/google/mangle/ast"
-	"github.com/google/mangle/parse"
+	"codeberg.org/TauCeti/mangle-go/ast"
+	"codeberg.org/TauCeti/mangle-go/parse"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
